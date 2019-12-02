@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Blackjack
 {
@@ -17,15 +18,32 @@ namespace Blackjack
                 b++;
             }
             int[] bets = new int[a];
+            int[] bet1 = new int[a];
+            int[] bet2 = new int[a];
+            int[] bet3 = new int[a];
             int kortvärde = 0;
             foreach (int e in antal)
             {
                 Console.WriteLine("Hur mycket vill spelare " + (e + 1) + " betta?");
                 bets[e] = int.Parse(Console.ReadLine());
+                bet1[e] = bets[e];
+                bet2[e] = bets[e];
+                bet3[e] = bets[e];
             }
+            List<int[]> allabets = new List<int[]>();
+            allabets.Add(bets);
+            allabets.Add(bet1);
+            allabets.Add(bet2);
+            allabets.Add(bet3);
+            int[] spelarkvärde = new int[a];
             int[] split1 = new int[a];
             int[] split2 = new int[a];
             int[] split3 = new int[a];
+            List<int[]> kvärden = new List<int[]>();
+            kvärden.Add(spelarkvärde);
+            kvärden.Add(split1);
+            kvärden.Add(split2);
+            kvärden.Add(split3);
             string[] allakort = new string[52];
             string[] datornsallakort = new string[10];
             int i = 0;
@@ -35,7 +53,6 @@ namespace Blackjack
             string[] skräplista = new string[2];
             string datornskort = Kortutdelare(slump, ref allakort, ref dantaläss, ref i, ref datornsallakort, ref c, ref datorkvärde, ref kortvärde, ref skräplista);
             Console.WriteLine("Datorn har kortet " + datornskort + " med värde " + datorkvärde + ".");
-            int[] spelarkvärde = new int[a];
             string spelarenskort;
             b = 0;
             foreach (int e in antal)
@@ -67,111 +84,7 @@ namespace Blackjack
                     y = true;
                     spelarkvärde[e] = 0;
                 }
-                while (y == false)
-                {
-                    if (spelarkvärde[e] > 21)
-                    {
-                        if (antaläss == 2)
-                        {
-                            Console.WriteLine("Du har 2 äss, vill du splitta eller minska värdet på en av dem?");
-                            string asvar = Console.ReadLine();
-                            if (asvar == "Split" || asvar == "split" || asvar == "sp")
-                            {
-                                split = true;
-                            }
-                        }
-                        if (antaläss > 0)
-                        {
-                            spelarkvärde[e] -= 10;
-                            Console.WriteLine("Du fick över 21, du hade dock " + antaläss + " äss så ett av dem byter värde till 1.");
-                            antaläss--;
-                            Console.WriteLine("Du har nu kortvärdet " + spelarkvärde[e] + ".");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Du fick över 21 och åker ut ur spelet. Du förlorar " + bets[e] + "kr.");
-                            spelarkvärde[e] = 0;
-                            break;
-                        }
-                    }
-                    if (split == true)
-                    {
-                        Split(ref spelarnamn, ref splitnr, e);
-                    }
-                    if (kanskesplit == true)
-                    {
-                        Console.Write("Split, ");
-                    }
-                    Console.WriteLine("Hit, Stand eller Double?");
-                    string svar = Console.ReadLine();
-                    if (svar == "Double" || svar == "double" || svar == "d")
-                    {
-                        bets[e] *= 2;
-                        string[] kortlista = new string[2];
-                        for (int n = 0; n != 2; n++)
-                        {
-                            spelarenskort = Kortutdelare(slump, ref allakort, ref antaläss, ref i, ref spelarensallakort, ref p, ref spelarkvärde[e], ref kortvärde, ref skräplista);
-                            kortlista[n] = spelarenskort;
-                        }
-                        int u = 0;
-                        Console.WriteLine("Du fick du korten " + Skaskrivas(kortlista, 2) + ".");
-                        Console.WriteLine("Ditt totala kortvärde är nu " + spelarkvärde[e] + ".");
-                        while (spelarkvärde[e] > 21)
-                        {
-                            if (antaläss > 0)
-                            {
-                                spelarkvärde[e] -= 10;
-                                u++;
-                                antaläss--;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Du fick över 21 och åker ut ur spelet. Du förlorar " + bets[e] + " kr.");
-                                spelarkvärde[e] = 0;
-                                if (u > 0)
-                                {
-                                    Console.WriteLine("Du hade äss men de räckte inte för att rädda dig.");
-                                }
-                                break;
-                            }
-                        }
-                        if (u > 0 && spelarkvärde[e] != 0)
-                        {
-                            Console.WriteLine("Ditt kortvärde var över 21. Du hade dock " + (u + antaläss) + " äss så " + u + " av dem byter värde till 1.");
-                            Console.WriteLine(spelarnamn + ", ditt slutgiltliga kortvärde är " + spelarkvärde[e] + " med korten " + Skaskrivas(spelarensallakort, p) + ".");
-                        }
-                        else if (spelarkvärde[e] != 0)
-                        {
-                            Console.WriteLine(spelarnamn + ", du slutade på korten " + Skaskrivas(spelarensallakort, p) + " med värdet " + spelarkvärde[e] + ".");
-                        }
-                        y = true;
-                    }
-                    else if (svar == "Hit" || svar == "hit" || svar == "h")
-                    {
-                        spelarenskort = Kortutdelare(slump, ref allakort, ref antaläss, ref i, ref spelarensallakort, ref p, ref spelarkvärde[e], ref kortvärde, ref skräplista);
-                        Console.WriteLine("Du fick kortet " + spelarenskort + " av värde " + kortvärde + ", totalt har du nu kortvärdet " + spelarkvärde[e] + ".");
-                        if (spelarkvärde[e] == 21)
-                        {
-                            Console.WriteLine("Grattis, du fick 21 med korten " + Skaskrivas(spelarensallakort, p) + " och har gått vidare.");
-                        }
-                    }
-                    else if (svar == "Stand" || svar == "stand" || svar == "s")
-                    {
-                        Console.WriteLine("Spelare " + (e + 1) + ", du slutade på korten " + Skaskrivas(spelarensallakort, p) + " med värde " + spelarkvärde[e]);
-                        break;
-                    }
-                    else if ((svar == "Split" || svar == "split" || svar == "sp") && kanskesplit == true)
-                    {
-                        split = true;
-                        Console.WriteLine("Ok, delar dina kort på två händer.");
-                        Console.WriteLine("Din första hand har kortet " + spelarensallakort[0] + " och din andra hand kortet " + spelarensallakort[1] + ", båda har värdet " + (spelarkvärde[e] / 2) + ".");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Kunde inte uppfatta det du sprev, försök igen");
-                    }
 
-                }
             }
             while (datorkvärde < 17)
             {
