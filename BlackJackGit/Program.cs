@@ -84,7 +84,8 @@ namespace Blackjack
                     y = true;
                     spelarkvärde[e] = 0;
                 }
-
+                int splitnr = 0;
+                Blackjack(e, a , ref y, ref antaläss, ref spelarkvärde[e], ref bets[e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref spelarensallakort, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr);
             }
             while (datorkvärde < 17)
             {
@@ -143,10 +144,21 @@ namespace Blackjack
         {
             return (slump.Next(1, 14));
         }
-        static void Split(ref string spelarnamn, ref int splitnr, int e)
+        static void Split(ref string spelarnamn, ref int splitnr, int e, ref List<int[]> allabets, ref List<int[]> kvärden, int a, ref int antaläss, ref bool split, Random slump, ref bool kanskesplit, ref string[] allakort, ref int i, ref int p, ref string[] skräplista, ref string[] kortlista, ref bool y, ref int kortvärde)
         {
             spelarnamn = "Spelare " + e + " hand " + (splitnr + 1);
+            kvärden[splitnr + 1][e] = kvärden[splitnr][e]/2;
+            kvärden[splitnr][e] /= 2;
+            p = 1;
+            string[] nykortlista = new string[a];
+            nykortlista[0] = kortlista[0];
+            Blackjack(e, a, ref y, ref antaläss, ref kvärden[splitnr][e], ref allabets[splitnr][e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref nykortlista, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr);
+            string[] ännunyarekortlista = new string[a];
+            ännunyarekortlista[0] = kortlista[1];
             splitnr++;
+            p = 1;
+            spelarnamn = "Spelare " + e + " hand " + (splitnr + 1);
+            Blackjack(e, a, ref y, ref antaläss, ref kvärden[splitnr][e], ref allabets[splitnr][e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref ännunyarekortlista, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr);
         }
         static string Kort(int kortvärde, Random slump, ref string kortnamn)
         {
@@ -206,11 +218,9 @@ namespace Blackjack
             }
             return kortvärde;
         }
-        static void Blackjack(int e, ref bool y, ref int antaläss, ref int kvärde, ref int bet, string spelarnamn, ref bool split, Random slump, ref bool kanskesplit, ref string[] allakort, ref int i, ref string[] spelarensallakort, ref int p, ref string[] skräplista, ref int kortvärde)
+        static void Blackjack(int e, int a, ref bool y, ref int antaläss, ref int kvärde, ref int bet, string spelarnamn, ref bool split, Random slump, ref bool kanskesplit, ref string[] allakort, ref int i, ref string[] spelarensallakort, ref int p, ref string[] skräplista, ref int kortvärde, ref List<int[]> allabets, ref List<int[]> kvärden, ref int splitnr)
 
         {
-            int splitnr = 0;
-            int splitant = 0;
             string spelarenskort;
             while (y == false)
             {
