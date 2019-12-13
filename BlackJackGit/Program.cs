@@ -50,7 +50,7 @@ namespace Blackjack
             int c = 0;
             int dantaläss = 0;
             int datorkvärde = 0;
-            string[] skräplista = new string[2];
+            int[] skräplista = new int[12];
             string datornskort = Kortutdelare(slump, ref allakort, ref dantaläss, ref i, ref datornsallakort, ref c, ref datorkvärde, ref kortvärde, ref skräplista);
             Console.WriteLine("Datorn har kortet " + datornskort + " med värde " + datorkvärde + ".");
             string spelarenskort;
@@ -65,7 +65,7 @@ namespace Blackjack
                 int antaläss = 0;
                 string[] spelarensallakort = new string[12];
                 bool kanskesplit = false;
-                string[] splittest = new string[2];
+                int[] splittest = new int[12];
                 for (int n = 0; n != 2; n++)
                 {
                     spelarenskort = Kortutdelare(slump, ref allakort, ref antaläss, ref i, ref spelarensallakort, ref p, ref spelarkvärde[e], ref kortvärde, ref splittest);
@@ -73,8 +73,8 @@ namespace Blackjack
                 if (splittest[0] == splittest[1])
                 {
                     kanskesplit = true;
-                    splittest[1] = "";
-                    splittest[0] = " ";
+                    splittest[1] = 0;
+                    splittest[0] = 0;
                 }
                 bool y = false;
                 Console.WriteLine(spelarnamn + ", du har korten " + Skaskrivas(spelarensallakort, p) + " med totalt värde " + spelarkvärde[e] + ".");
@@ -85,7 +85,7 @@ namespace Blackjack
                     spelarkvärde[e] = 0;
                 }
                 int splitnr = 0;
-                Blackjack(e, a , ref y, ref antaläss, ref spelarkvärde[e], ref bets[e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref spelarensallakort, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr);
+                Blackjack(e, a , ref y, antaläss, ref spelarkvärde[e], ref bets[e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref spelarensallakort, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr, ref splittest);
             }
             while (datorkvärde < 17)
             {
@@ -144,21 +144,95 @@ namespace Blackjack
         {
             return (slump.Next(1, 14));
         }
-        static void Split(ref string spelarnamn, ref int splitnr, int e, ref List<int[]> allabets, ref List<int[]> kvärden, int a, ref int antaläss, ref bool split, Random slump, ref bool kanskesplit, ref string[] allakort, ref int i, ref int p, ref string[] skräplista, ref string[] kortlista, ref bool y, ref int kortvärde)
+        static void Split(ref string spelarnamn, ref int splitnr, int e, ref List<int[]> allabets, ref List<int[]> kvärden, int a, ref int antaläss, ref bool split, Random slump, ref bool kanskesplit, ref string[] allakort, ref int i, ref int p, ref int[] skräplista, ref string[] kortlista, ref bool y, ref int kortvärde, ref int[] splittest)
         {
             spelarnamn = "Spelare " + e + " hand " + (splitnr + 1);
-            kvärden[splitnr + 1][e] = kvärden[splitnr][e]/2;
             kvärden[splitnr][e] /= 2;
+            int[] nysplittest = new int[12];
+            Splittestreset(ref splittest, ref nysplittest, p);
             p = 1;
             string[] nykortlista = new string[a];
             nykortlista[0] = kortlista[0];
-            Blackjack(e, a, ref y, ref antaläss, ref kvärden[splitnr][e], ref allabets[splitnr][e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref nykortlista, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr);
+            if (antaläss > 2)
+            {
+                kvärden[splitnr][e] += 10;
+            }
+            kvärden[splitnr + 1][e] = kvärden[splitnr][e];
+            antaläss /= 2;
+            int nyantaläss = antaläss;
+            Blackjack(e, a, ref y, antaläss, ref kvärden[splitnr][e], ref allabets[splitnr][e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref nykortlista, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr, ref splittest);
             string[] ännunyarekortlista = new string[a];
             ännunyarekortlista[0] = kortlista[1];
             splitnr++;
             p = 1;
             spelarnamn = "Spelare " + e + " hand " + (splitnr + 1);
-            Blackjack(e, a, ref y, ref antaläss, ref kvärden[splitnr][e], ref allabets[splitnr][e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref ännunyarekortlista, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr);
+            Blackjack(e, a, ref y, nyantaläss, ref kvärden[splitnr][e], ref allabets[splitnr][e], spelarnamn, ref split, slump, ref kanskesplit, ref allakort, ref i, ref ännunyarekortlista, ref p, ref skräplista, ref kortvärde, ref allabets, ref kvärden, ref splitnr, ref splittest);
+        }
+        static void Splittestreset(ref int[] splittest, ref int[] nsplittest, int p)
+        {
+            int n = 1;
+            int f = 0;
+            while (true)
+            {
+                int b = 1;
+                if (n == 0)
+                {
+                    break;
+                }
+                n = 0;
+                for (int i = 1; i < 12; i++)
+                {
+                    Jämförare(ref splittest[b - 1], ref splittest[b], ref n, ref f);
+                    b++;
+                }
+            }
+            int k = 1;
+            nsplittest[0] = splittest[0];
+            if (p > 2)
+            {
+                splittest[1] = splittest[2];
+                nsplittest[1] = splittest[1];
+                k++;
+                if (p > 4)
+                {
+                    splittest[2] = splittest[4];
+                    nsplittest[2] = splittest[2];
+                    k++;
+                    if (p > 6)
+                    {
+                        splittest[3] = splittest[6];
+                        nsplittest[3] = splittest[3];
+                        k++;
+                        if (p > 8)
+                        {
+                            splittest[4] = splittest[8];
+                            nsplittest[4] = splittest[4];
+                            k++;
+                            if (p > 10)
+                            {
+                                splittest[5] = splittest[10];
+                                nsplittest[5] = splittest[5];
+                                k++;
+                            }
+                        }
+                    }
+                }
+            }
+            for (int i = 11; i > k; i--)
+            {
+                splittest[i] = 0;
+            }
+        }
+        static void Jämförare(ref int a, ref int b, ref int n, ref int f)
+        {
+            if (a > b && b != 0)
+            {
+                int v = a;
+                a = b;
+                b = v;
+                n++;
+                f++;
+            }
         }
         static string Kort(int kortvärde, Random slump, ref string kortnamn)
         {
@@ -218,7 +292,7 @@ namespace Blackjack
             }
             return kortvärde;
         }
-        static void Blackjack(int e, int a, ref bool y, ref int antaläss, ref int kvärde, ref int bet, string spelarnamn, ref bool split, Random slump, ref bool kanskesplit, ref string[] allakort, ref int i, ref string[] spelarensallakort, ref int p, ref string[] skräplista, ref int kortvärde, ref List<int[]> allabets, ref List<int[]> kvärden, ref int splitnr)
+        static void Blackjack(int e, int a, ref bool y, int antaläss, ref int kvärde, ref int bet, string spelarnamn, ref bool split, Random slump, ref bool kanskesplit, ref string[] allakort, ref int i, ref string[] spelarensallakort, ref int p, ref int[] skräplista, ref int kortvärde, ref List<int[]> allabets, ref List<int[]> kvärden, ref int splitnr, ref int[] splittest)
 
         {
             string spelarenskort;
@@ -232,7 +306,10 @@ namespace Blackjack
                         string asvar = Console.ReadLine();
                         if (asvar == "Split" || asvar == "split" || asvar == "sp")
                         {
-                            split = true;
+                            Console.WriteLine("Ok, delar dina kort på två händer.");
+                            Console.WriteLine("Din första hand har kortet " + spelarensallakort[0] + " och din andra hand kortet " + spelarensallakort[1] + ", båda har värdet " + (kvärde / 2) + ".");
+                            Split(ref spelarnamn, ref splitnr, e, ref allabets, ref kvärden, a, ref antaläss, ref split, slump, ref kanskesplit, ref allakort, ref i, ref p, ref skräplista, ref spelarensallakort, ref y, ref kortvärde, ref splittest);
+                            return;
                         }
                     }
                     if (antaläss > 0)
@@ -249,10 +326,7 @@ namespace Blackjack
                         break;
                     }
                 }
-                if (split == true)
-                {
-                    Split(ref spelarnamn, ref splitnr, e);
-                }
+                kanskesplit = Splittest();
                 if (kanskesplit == true)
                 {
                     Console.Write("Split, ");
@@ -317,9 +391,10 @@ namespace Blackjack
                 }
                 else if ((svar == "Split" || svar == "split" || svar == "sp") && kanskesplit == true)
                 {
-                    split = true;
                     Console.WriteLine("Ok, delar dina kort på två händer.");
                     Console.WriteLine("Din första hand har kortet " + spelarensallakort[0] + " och din andra hand kortet " + spelarensallakort[1] + ", båda har värdet " + (kvärde / 2) + ".");
+                    Split(ref spelarnamn, ref splitnr, e, ref allabets, ref kvärden, a, ref antaläss, ref split, slump, ref kanskesplit, ref allakort, ref i, ref p, ref skräplista, ref spelarensallakort, ref y, ref kortvärde, ref splittest);
+                    return;
                 }
                 else
                 {
@@ -341,7 +416,7 @@ namespace Blackjack
             }
             return true;
         }
-        static string Kortutdelare(Random slump, ref string[] lista, ref int äss, ref int i, ref string[] lista2, ref int o, ref int värde, ref int kortvärde, ref string[] splittest)
+        static string Kortutdelare(Random slump, ref string[] lista, ref int äss, ref int i, ref string[] lista2, ref int o, ref int värde, ref int kortvärde, ref int[] splittest)
         {
             while (true)
             {
@@ -357,6 +432,7 @@ namespace Blackjack
                 }
                 string kortnamn = "";
                 kortvärde = Kortgivare(slump);
+                splittest[o] = kortvärde;
                 string kort = Kort(kortvärde, slump, ref kortnamn);
                 if (Kortjämförare(kort, lista) == true)
                 {
@@ -369,10 +445,6 @@ namespace Blackjack
                     if (kortvärde == 1)
                     {
                         äss++;
-                    }
-                    if (o < 2)
-                    {
-                        splittest[o] = kortnamn;
                     }
                     return kort;
                 }
